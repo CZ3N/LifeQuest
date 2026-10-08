@@ -1,143 +1,248 @@
-// This is your app. It runs as it is: press run and you get the screen below.
-//
-// Nothing here is precious. Change the title, change the colors, delete the
-// counter, add your own screens. It exists so that the repository is a working
-// Flutter app from minute one instead of an empty folder.
-//
-// Everything in this file is Module 4 and 5 material: StatelessWidget,
-// StatefulWidget, setState, Scaffold, AppBar, Column, Card, FilledButton.
-
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 
+import 'models/quest.dart';
+import 'screens/add_edit_quest_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/quest_detail_screen.dart';
+import 'screens/quest_list_screen.dart';
+import 'services/progress_service.dart';
+import 'services/storage_service.dart';
+import 'theme.dart';
+import 'widgets/bottom_navigation.dart';
+
 void main() {
   runApp(
-    // DevicePreview draws a phone frame around your app, so it is judged at the
-    // size it was designed for instead of stretched across a laptop window.
-    //
-    // It is left ON in the deployed build on purpose: your live link is opened
-    // on a desktop browser, and a phone layout at full desktop width looks
-    // broken when it is not. The toolbar also lets a visitor switch device and
-    // orientation.
-    //
-    // Want the clean app with no frame instead (for a portfolio, or because
-    // you made the layout properly responsive)? Add
-    //   import 'package:flutter/foundation.dart' show kReleaseMode;
-    // and set `enabled: !kReleaseMode`, which drops the frame in release builds.
+    // DevicePreview draws a phone frame around the app so it is judged at
+    // the size it was designed for, instead of stretched across a laptop
+    // window. See START-HERE.md for why this stays on in the deployed
+    // build.
     DevicePreview(
       enabled: true,
-      builder: (context) => const MyApp(),
+      builder: (context) => const LifeQuestApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class LifeQuestApp extends StatelessWidget {
+  const LifeQuestApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'My Final Project',
+      title: 'Life Quest',
       debugShowCheckedModeBanner: false,
-
-      // These two lines are what make the DevicePreview toolbar actually
-      // change the app. Keep them.
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
-
-      // Your design system starts here. One seed color generates a full
-      // Material palette; swap in your own and every screen follows.
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6750A4)),
-      ),
-
-      home: const HomeScreen(),
+      theme: appTheme,
+      home: const AppShell(),
     );
   }
 }
 
-/// The first screen. Replace it with yours.
+/// Owns the app's shared state: the quest list, the username, and which
+/// achievements have been unlocked. Every screen reads it from here and
+/// calls back up here to change it, so there is a single place that talks
+/// to StorageService and a single place that calls setState. This is the
+/// "lift state up" pattern from Modules 4 and 5 — no external state
+/// management package is used on purpose, to match where the course is at
+/// when this MVP was built.
 ///
-/// It is a StatefulWidget because it remembers something that changes: the
-/// counter. A screen that never changes can be a StatelessWidget instead.
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+/// What actually changing something looks like, end to end: a screen calls
+/// one of the methods below -> the in-memory list updates via setState ->
+/// the change is written to StorageService -> ProgressService checks
+/// whether XP, a level, or an achievement changed as a result -> the user
+/// is told so with a SnackBar. No screen computes XP, levels or achievement
+/// unlocks itself; they only ever display what AppShell hands them.
+class AppShell extends StatefulWidget {
+  const AppShell({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<AppShell> createState() => _AppShellState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  // State: a plain field. Changing it does nothing on its own; the screen only
-  // redraws when you change it inside setState.
-  int _taps = 0;
+class _AppShellState extends State<AppShell> {
+  final StorageService _storage = StorageService();
 
-  void _handleTap() {
+  List<Quest> _quests = [];
+  String _username = 'Adventure Seeker';
+  Set<String> _unlockedAchievementIds = {};
+  int _tabIndex = 0;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final quests = await _storage.loadQuests();
+    final username = await _storage.loadUsername();
+    var unlocked = await _storage.loadUnlockedAchievements();
+
+    // Reconcile once at startup, silently (no SnackBar): this covers the
+    // very first run, where the seeded sample quests already satisfy a
+    // couple of achievements, and any achievement that became true while
+    // the app was closed.
+    final newlyTrue = ProgressService.newlyUnlocked(quests, unlocked);
+    if (newlyTrue.isNotEmpty) {
+      unlocked = {...unlocked, ...newlyTrue.map((a) => a.id)};
+      await _storage.saveUnlockedAchievements(unlocked);
+    }
+
     setState(() {
-      _taps++;
+      _quests = quests;
+      _username = username;
+      _unlockedAchievementIds = unlocked;
+      _loading = false;
     });
+  }
+
+  Future<void> _persistQuests() => _storage.saveQuests(_quests);
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
+    );
+  }
+
+  /// Unlocks (and persists) any achievement that just became true, and
+  /// tells the user about each one. Called after every quest change.
+  Future<void> _checkAchievements() async {
+    final newly =
+        ProgressService.newlyUnlocked(_quests, _unlockedAchievementIds);
+    if (newly.isEmpty) return;
+
+    setState(() {
+      _unlockedAchievementIds = {
+        ..._unlockedAchievementIds,
+        ...newly.map((a) => a.id),
+      };
+    });
+    await _storage.saveUnlockedAchievements(_unlockedAchievementIds);
+    for (final achievement in newly) {
+      _showSnack('🏆 Achievement unlocked: ${achievement.title}!');
+    }
+  }
+
+  void _addQuest(Quest quest) {
+    setState(() => _quests = [quest, ..._quests]);
+    _persistQuests();
+    _showSnack('Quest added: "${quest.title}".');
+    _checkAchievements();
+  }
+
+  /// Handles both a plain edit and a completion (Quest Detail's "Mark
+  /// Complete" calls this same callback). The two are told apart by
+  /// comparing total XP before and after: only completing a quest moves it,
+  /// so only that case earns the "+XP" / "Level up!" message.
+  void _updateQuest(Quest updated) {
+    final xpBefore = ProgressService.totalXp(_quests);
+    final levelBefore = ProgressService.levelForXp(xpBefore);
+
+    setState(() {
+      _quests = _quests
+          .map((q) => q.questId == updated.questId ? updated : q)
+          .toList();
+    });
+    _persistQuests();
+
+    final xpAfter = ProgressService.totalXp(_quests);
+    final levelAfter = ProgressService.levelForXp(xpAfter);
+    final xpGained = xpAfter - xpBefore;
+
+    if (xpGained > 0) {
+      var message = 'Quest completed! +$xpGained XP earned.';
+      if (levelAfter > levelBefore) {
+        message += ' Level up! You are now level $levelAfter.';
+      }
+      _showSnack(message);
+    } else {
+      _showSnack('Quest updated.');
+    }
+
+    _checkAchievements();
+  }
+
+  void _deleteQuest(String questId) {
+    final index = _quests.indexWhere((q) => q.questId == questId);
+    final title = index == -1 ? 'Quest' : _quests[index].title;
+
+    setState(() {
+      _quests = _quests.where((q) => q.questId != questId).toList();
+    });
+    _persistQuests();
+    _showSnack('Deleted "$title".');
+    // Not followed by _checkAchievements(): deleting a quest can only
+    // reduce totals, never unlock a new achievement, and earned badges are
+    // never revoked. See ProgressService.newlyUnlocked.
+  }
+
+  Future<void> _renameUser(String newName) async {
+    final trimmed = newName.trim();
+    if (trimmed.isEmpty || trimmed == _username) return;
+    setState(() => _username = trimmed);
+    await _storage.saveUsername(trimmed);
+    _showSnack('Username updated to "$trimmed".');
+  }
+
+  Future<void> _openAddQuest() async {
+    final result = await Navigator.push<Quest>(
+      context,
+      MaterialPageRoute(builder: (_) => const AddEditQuestScreen()),
+    );
+    if (result != null) _addQuest(result);
+  }
+
+  void _openQuestDetail(Quest quest) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => QuestDetailScreen(
+          quest: quest,
+          onUpdate: _updateQuest,
+          onDelete: _deleteQuest,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Reading colors and text styles from the theme, instead of hardcoding
-    // them, is what keeps every screen looking like the same app.
-    final theme = Theme.of(context);
+    if (_loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final screens = [
+      DashboardScreen(
+        quests: _quests,
+        username: _username,
+        unlockedAchievementIds: _unlockedAchievementIds,
+        onSeeAllQuests: () => setState(() => _tabIndex = 1),
+        onAddQuest: _openAddQuest,
+        onQuestTap: _openQuestDetail,
+      ),
+      QuestListScreen(
+        quests: _quests,
+        onAddQuest: _openAddQuest,
+        onQuestTap: _openQuestDetail,
+      ),
+      ProfileScreen(
+        quests: _quests,
+        username: _username,
+        unlockedAchievementIds: _unlockedAchievementIds,
+        onRename: _renameUser,
+      ),
+    ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Final Project'),
-        backgroundColor: theme.colorScheme.primaryContainer,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.rocket_launch,
-                size: 72,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(height: 16),
-              Text('It works', style: theme.textTheme.headlineSmall),
-              const SizedBox(height: 8),
-              Text(
-                'This is the starting point of your final project. '
-                'Open lib/main.dart and start changing it.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 24),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text('Taps: $_taps',
-                          style: theme.textTheme.headlineSmall),
-                      const SizedBox(height: 12),
-                      FilledButton.icon(
-                        onPressed: _handleTap,
-                        icon: const Icon(Icons.touch_app),
-                        label: const Text('Tap me'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Close the app and the count goes back to zero. '
-                'Fixing that is what content/extending-your-app is about.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.labelSmall,
-              ),
-            ],
-          ),
-        ),
+      body: IndexedStack(index: _tabIndex, children: screens),
+      bottomNavigationBar: BottomNavigation(
+        currentIndex: _tabIndex,
+        onTap: (index) => setState(() => _tabIndex = index),
       ),
     );
   }
