@@ -1,38 +1,38 @@
-# Demo video
+# Demo video — Life Quest
 
-**File:** `demo.mp4` in this folder, or the hosted link (see below)
-**Length:** aim for 3 to 5 minutes
-**Recorded on:** the device you used
+**Status:** Recording still required. Do not mark this complete until a video file or hosted video link is available.
 
-## What it shows
+**Suggested file:** `docs/demo.mp4` (or add a hosted link in the README). **Target length:** 3–5 minutes.
 
-A short list, in order, so a viewer can skip to what they need:
+## Short recording script
 
-- 0:00 what the app is and who it is for
-- 0:20 ...
-- 1:10 ...
+**0:00–0:20 — Introduction**
+“Hi, this is Life Quest, a personal quest tracker for meaningful experiences like outdoor activities, travel, learning, and personal challenges. It is not only a normal to-do list. It lets users record what they want to do, save completion memories, and track progress through XP and achievements.”
 
-Cover, in this order: the main user journey end to end, anything that only works
-on a real device (camera, GPS, sensors), and the thing you are proudest of.
+**0:20–0:55 — Dashboard**
+“Here is the dashboard. It summarizes quest progress, XP and level, recent quests, and achievement progress. The quick action lets me create a new quest.”
 
-## Getting it into the repo
+**0:55–1:35 — Create a quest**
+“I will create a sample quest. I enter a title, category, description, and target date, then save it. The quest appears in the app.”
 
-GitHub **blocks any file over 100 MB** and warns over 50 MB, so compress before
-you commit:
+**1:35–2:05 — Search and filter**
+“On the Quest List screen, I can search by text and filter by category or status to find a specific quest.”
 
-```bash
-ffmpeg -i raw.mp4 -vcodec libx264 -crf 28 -preset slow \
-       -vf scale=-2:720 -acodec aac -b:a 96k demo.mp4
-```
+**2:05–2:50 — Complete a quest and record a memory**
+“I open the quest details and mark it complete. I can record the completion date and a journal note about the experience. Photo storage is not part of this MVP.”
 
-Raise `-crf` (28 to 32) or drop to `-2:480` if it is still too large. If it still
-does not fit, attach it to a **GitHub Release** or upload it unlisted and link it
-here. Never commit the raw capture: git keeps it forever even after you delete
-it.
+**2:50–3:25 — XP and achievements**
+“When a quest is completed, the app updates progress and XP. Achievements show milestones that have been reached.”
 
-## Before you record
+**3:25–3:50 — Profile and persistence**
+“The Profile and Statistics screen shows the username, level, XP, quest totals, and badges. I will demonstrate saved data after a restart only if I have verified that behavior before recording.”
 
-- Real data off the screen: no classmates' names, numbers, faces or messages.
-- Notifications off.
-- Sensible sample data, not "asdf".
-- One unbroken take per feature. Say what you are doing while you do it.
+## Recording checklist
+
+- [ ] Run the app and test each flow before recording.
+- [ ] Use only synthetic sample data.
+- [ ] Show all five approved screens.
+- [ ] Demonstrate search/filter and quest completion if working.
+- [ ] Verify persistence by reloading/restarting before claiming it works.
+- [ ] Record readable audio and keep private browser tabs/notifications hidden.
+- [ ] Add the video or hosted link to README and commit it.

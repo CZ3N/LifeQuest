@@ -6,22 +6,29 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:final_project/main.dart';
 
 void main() {
-  testWidgets('home screen shows its title and counts taps', (tester) async {
-    // Build the app. Note we build MyApp directly, not the DevicePreview
-    // wrapper, because a test does not need the phone frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Dashboard loads and shows the seeded sample quests',
+      (tester) async {
+    // shared_preferences needs mock values in a test environment, since
+    // there is no real device storage for it to read from.
+    SharedPreferences.setMockInitialValues({});
 
-    expect(find.text('It works'), findsOneWidget);
-    expect(find.text('Taps: 0'), findsOneWidget);
+    // Build MyApp's inner widget directly, not the DevicePreview wrapper,
+    // because a test does not need the phone frame.
+    await tester.pumpWidget(const LifeQuestApp());
 
-    // Tap the button, then let the widget rebuild.
-    await tester.tap(find.byType(FilledButton));
-    await tester.pump();
+    // The first frame is a loading spinner while quests are read from
+    // storage; pump until that async load finishes.
+    await tester.pumpAndSettle();
 
-    expect(find.text('Taps: 1'), findsOneWidget);
+    expect(find.text('LifeQuest'), findsOneWidget);
+    expect(find.text('Welcome back, Adventure Seeker'), findsOneWidget);
+
+    // The app seeds three synthetic sample quests the first time it runs.
+    expect(find.text('Morning Run'), findsWidgets);
   });
 }

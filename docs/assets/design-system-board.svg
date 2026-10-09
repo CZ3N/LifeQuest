@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820">
+  <rect width="1200" height="820" fill="#F5F7F5"/>
+  <rect x="40" y="35" width="1120" height="140" rx="24" fill="#2E7D32"/>
+  <text x="78" y="92" font-family="Arial, sans-serif" font-size="20" fill="#E8F5E9" letter-spacing="3">LIFE QUEST / DESIGN SYSTEM V2</text>
+  <text x="78" y="140" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#FFFFFF">Make progress feel like an adventure.</text>
+  <text x="55" y="225" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#263238">Color palette</text>
+  <g font-family="Arial, sans-serif" font-size="16" fill="#263238">
+    <rect x="55" y="248" width="190" height="100" rx="14" fill="#2E7D32"/><text x="70" y="375">Primary</text><text x="70" y="397">#2E7D32</text>
+    <rect x="265" y="248" width="190" height="100" rx="14" fill="#4FC3F7"/><text x="280" y="375">Accent</text><text x="280" y="397">#4FC3F7</text>
+    <rect x="475" y="248" width="190" height="100" rx="14" fill="#FFFFFF" stroke="#CFD8D3"/><text x="490" y="375">Surface</text><text x="490" y="397">#FFFFFF</text>
+    <rect x="685" y="248" width="190" height="100" rx="14" fill="#263238"/><text x="700" y="375">Main text</text><text x="700" y="397">#263238</text>
+    <rect x="895" y="248" width="190" height="100" rx="14" fill="#D32F2F"/><text x="910" y="375">Error</text><text x="910" y="397">#D32F2F</text>
+  </g>
+  <text x="55" y="455" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#263238">Typography</text>
+  <rect x="55" y="477" width="510" height="132" rx="18" fill="#FFFFFF" stroke="#DCE4DE"/>
+  <text x="80" y="520" font-family="Arial, sans-serif" font-size="14" fill="#60716A">HEADLINE SMALL / 24 PX / BOLD</text>
+  <text x="80" y="563" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#263238">Your next quest awaits</text>
+  <text x="80" y="590" font-family="Arial, sans-serif" font-size="16" fill="#263238">Body Medium / 16 px / regular</text>
+  <rect x="590" y="477" width="495" height="132" rx="18" fill="#FFFFFF" stroke="#DCE4DE"/>
+  <text x="615" y="520" font-family="Arial, sans-serif" font-size="14" fill="#60716A">COMPONENT EXAMPLES</text>
+  <rect x="615" y="540" width="195" height="48" rx="12" fill="#2E7D32"/>
+  <text x="650" y="571" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#FFFFFF">Create Quest +</text>
+  <rect x="830" y="540" width="225" height="48" rx="12" fill="#E8F5E9" stroke="#A5D6A7"/>
+  <text x="850" y="570" font-family="Arial, sans-serif" font-size="16" fill="#2E7D32">🏆  Achievement</text>
+  <text x="55" y="663" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#263238">Design principles</text>
+  <g font-family="Arial, sans-serif" font-size="18" fill="#263238">
+    <circle cx="70" cy="704" r="7" fill="#2E7D32"/><text x="90" y="710">Progress should be visible at a glance.</text>
+    <circle cx="70" cy="740" r="7" fill="#2E7D32"/><text x="90" y="746">Keep quest creation and completion simple.</text>
+    <circle cx="620" cy="704" r="7" fill="#2E7D32"/><text x="640" y="710">Use consistent cards, spacing, and status cues.</text>
+    <circle cx="620" cy="740" r="7" fill="#2E7D32"/><text x="640" y="746">Light mode and green brand direction for MVP.</text>
+  </g>
+  <text x="55" y="790" font-family="Arial, sans-serif" font-size="13" fill="#60716A">Reference board based on documented Life Quest tokens; confirm against final Flutter theme before submission.</text>
+</svg>

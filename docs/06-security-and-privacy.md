@@ -1,42 +1,38 @@
 # Security and privacy
 
-This repository is public. Fill this in honestly and date it; it is checked as
-part of grading.
+**Last checked:** 2026-10-09 (documentation review; update after the next technical check)
 
-**Last checked:** YYYY-MM-DD
+This repository is public. Do not commit real personal journal entries, credentials, tokens, or private account data.
 
 ## What this app stores
 
 | Data | Where it lives | Who can see it |
 | --- | --- | --- |
-| e.g. the user's task list | on the device (shared_preferences) | only that user |
+| Quest title, category, description, status, target date, completion date, journal notes, XP reward | Local `shared_preferences` as a JSON string | User of that local browser/device profile |
+| Username | Local `shared_preferences` | User of that local browser/device profile |
+| Unlocked achievement IDs | Local `shared_preferences` | User of that local browser/device profile |
+| XP, level, and progress totals | Calculated from local quest records | User of that local browser/device profile |
+
+The current MVP does not send these records to a remote database. Local browser storage is not encrypted cloud storage, account synchronization, or a backup. Clearing browser/site data may remove saved information.
 
 ## Secrets
 
-- Values my app needs at run time: _(list the names, not the values)_
-- Where they live locally: `.env`, which is git-ignored
-- Where the deploy workflow gets them: repository secrets (Settings > Secrets
-  and variables > Actions; the walkthrough is on page 12 of
-  `content/extending-your-app/` in your workspace)
-- Anything my deployed web build carries that a visitor could read, and why that
-  is acceptable: _(a Supabase anon key protected by RLS, a Firebase config
-  protected by rules, or nothing)_
+- Runtime API keys required by the current MVP: none.
+- Local `.env`: not required by the current implementation.
+- Deployment secrets: none are currently required by the local-only implementation.
+- Values included in the deployed web build: no private API keys or service credentials are intended to be included.
 
 ## What protects the data on the service side
 
-- Firestore rules / Supabase RLS policies: _(paste or summarize them; "test mode"
-  is not an answer)_
-- If nothing leaves the device, say that instead.
+There is no application backend or cloud database in the current MVP, so there are no Firestore rules or Supabase RLS policies. Data is stored locally through `shared_preferences`. Anyone with access to the same unlocked device/browser profile may be able to access its local app data; do not use the app to store sensitive information.
 
 ## Checklist
 
-- [ ] `.env` (or `env.json`) is in `.gitignore`, and `.env.example` is committed
-- [ ] `git log -p | grep -i "api_key\|secret\|password\|token"` finds nothing real
-- [ ] No service account file, keystore or `service_role` key anywhere in the repo
-- [ ] Security rules or RLS policies written and tested, not left open
-- [ ] No real personal data in sample data, screenshots or the video
-- [ ] No course or university credentials anywhere
-- [ ] Anyone whose data appears in a test was asked first
+- [x] `.env` is listed in `.gitignore` and `.env.example` contains no real secrets.
+- [x] Current app code does not require a service credential or private API key.
+- [ ] Review Git history for accidentally committed credentials before final submission.
+- [x] Keep synthetic sample data only; review screenshots/video before publishing.
+- [x] Do not include course/university credentials in the public repository.
+- [ ] Manually verify browser persistence and review the final deployed build before submission.
 
-If you found and revoked a key while doing this, say so here. Catching it is the
-right outcome, not an embarrassment.
+Checked boxes reflect the repository/configuration review for this integration, not a substitute for remaining manual checks.

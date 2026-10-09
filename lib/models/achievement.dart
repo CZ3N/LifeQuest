@@ -81,4 +81,16 @@ final List<Achievement> allAchievements = [
     icon: Icons.bolt,
     isUnlocked: (quests) => _totalXp(quests) >= 500,
   ),
+  // Added by Chen Zen — a completion-time achievement rather than a count
+  // or category one, to reward late-night progress on a quest too.
+  Achievement(
+    id: 'night_owl',
+    title: 'Night Owl',
+    description: 'Complete a quest after 9 PM.',
+    icon: Icons.nightlight_round,
+    isUnlocked: (quests) => quests.any((q) =>
+        q.status == QuestStatus.completed &&
+        q.completionDate != null &&
+        q.completionDate!.hour >= 21),
+  ),
 ];
